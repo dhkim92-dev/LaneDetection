@@ -4,6 +4,7 @@
 import numpy as np
 import cv2
 import random
+
 """
 영상으로부터 프레임을 받아와서 현재 차량이 속한 차선을 검출해주는 클래스
 차선 검출은 다음 단계를 따름
@@ -15,7 +16,13 @@ import random
 5. 허프 변환을 이용하여 선들을 검출
 6. 5에서 얻은 선들에서 후보차선을 검출
 	각도에 따라 수평,수직 각도의 제한 각도를 둬 필요없는 선들을 버림
+
+추가부분
+검출된 직선들을 랜덤 샘플링을 해서 최소자승법에 따라 그룹화 시켜
+잡음에 의해 검출된 부분을 제거함
+
 7. 남은 선들을 화면에 그려줌
+
 """
 
 class LaneDetector :
@@ -29,13 +36,13 @@ class LaneDetector :
 	def interpolation(self,lines) : 
 		#print('lines shape : ',lines.shape)
 		ipl = lines.reshape(lines.shape[0]*2,2)
+		#print('interp shape = ',ipl.shape)
 
 		for line in lines :
 			x1, y1, x2, y2 = line
-			print('y2 = ',y2, ' y1 = ',y1)
 			if np.abs(y2-y1) > 5 :
 				temp = np.abs(y2-y1)
-				slp = (y2-y1)/(x2-x1)
+				slp = (x2-x1)/(y2-y1)
 				for i in range(0,temp,5) :
 					if slp > 0 :
 						new_p = np.array([[int(x1 + i *slp ),int(y1+i)]])
@@ -43,7 +50,6 @@ class LaneDetector :
 					elif slp < 0 :
 						new_p = np.array([[int(x1-i*slp),int(y1-i)]])
 						ipl = np.concatenate((ipl,new_p),axis=0)
-
 		return ipl
 
 	def img2Binary(self,frame,flag = 'video') :
@@ -136,7 +142,7 @@ class LaneDetector :
 		tx0,ty0,tx1,ty1 = default_line
 		#print(' ', tx0,' ', ty0,' ', tx1,' ',ty1)  
 
-		x0 = int(((frame.shape[0]-1)-ty1)/tx0*ty0 + tx1)
+		x0 = int(((frame.shape[0]-1)-ty1)/ty0*tx0 + tx1)
 		y0 = frame.shape[0]-1 
 		x1 = int(((frame.shape[0]/2+100)-ty1)/ty0*tx0 + tx1)
 		y1 = int(frame.shape[0]/2+100)
@@ -274,7 +280,7 @@ class LaneDetector :
 
 if __name__ == '__main__':
 
-	cam = cv2.VideoCapture('test4.mp4')
+	cam = cv2.VideoCapture('test.mp4')
 
 	ld = LaneDetector()
 	while True :
