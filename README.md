@@ -1,6 +1,7 @@
 # Lane Detection
-- 직선 차선 인식 프로그램  
-- 개인적인 OpenCV  공부를 하며 제작  
+- Direct Line style Lane Detection
+- Just for Study.  
+Not so good.
 ## Enviroments
 - MAC
 - Ubuntu Linux
